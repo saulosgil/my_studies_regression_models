@@ -1,0 +1,24 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Studing regression models
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The goal of my_studies_regression_models is to simulate some regression analysis using linear, segmented, polynomial and spline. 
+
+```{r}
+summary(cars)
+```
+In that case, don't forget to commit and push the resulting figure files, so they display on GitHub.
