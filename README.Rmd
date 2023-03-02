@@ -16,9 +16,178 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of my_studies_regression_models is to simulate some regression analysis using linear, segmented, polynomial and spline. 
+The goal of this project is to apply some of my recent studies in regression models. For it I simulated some regression analysis using linear, segmented, polynomial and spline. 
+
+## Packages
+```{r}
+library(splines)
+library(tidyverse)
+library(patchwork)
+library(ggthemes)
+```
+
+## Creating dataset
+```{r}
+df <- tribble(
+  ~Dias, ~Preços,
+  5,100,
+  10,125,
+  25,250,
+  45,300,
+  70,350,
+  85,460,
+  90,510,
+  100,460,
+  110,430,
+  125,400,
+  130,370,
+  150,340,
+  175,330
+)
+
+head(df)
+```
+## Plot of data 
 
 ```{r}
-summary(cars)
+g1 <-
+  df |> 
+  ggplot(aes(x = Dias,y = Preços)) +
+  geom_point(colour = "red", size = 4) +
+  labs(title = "OS DADOS - VARIAÇÃO DOS PREÇOS AO LONGO DOS DIAS") +
+  theme_igray()
+
+g1
 ```
-In that case, don't forget to commit and push the resulting figure files, so they display on GitHub.
+
+## Linear regression
+
+```{r}
+# Linear model
+m1 <- lm(Preços ~ Dias, df)
+summary(m1)
+
+# plot linear model
+g2 <- 
+  df |> 
+  ggplot(aes(x = Dias,y = Preços)) +
+  geom_point(colour = "red", size = 4) + 
+  geom_smooth(method = "lm", color = "blue", size = 1, se = FALSE) +
+  labs(title = "REGRESSÃO LINEAR") +
+  theme_igray()
+
+g2
+```
+
+## Polynomial regression (degree = 2)
+
+```{r}
+# Polynomial model
+m2 <- lm(Preços ~ poly(Dias,degree = 2) + Dias, df)
+summary(m2)
+
+# Polynomial model (degree 2)
+# predict
+pred_m2 <- predict(m2, interval = "confidence")
+
+# join fit and dataset 
+dfm2 = cbind(df, pred_m2)
+head(dfm2)
+
+# plot
+g3 <- 
+  dfm2 |> 
+  ggplot(aes(x = Dias, y = Preços)) +
+  geom_point(colour = "red", size = 4) + 
+  geom_line(aes(y = fit), color = "blue", size = 1) +
+  labs(title = "REGESSÃO POLINOMIAL DE GRAU 2") +
+  theme_igray()
+
+g3
+```
+
+## Segmented model
+
+```{r}
+# dataet with categorical variable
+dfseg <- 
+  df |> 
+  mutate(x = if_else(condition = Dias <= 90,true = 0,false = 1),
+         dif = Dias - 90,
+         X = dif * x)
+
+# Segmetned Model
+m3 <- lm(Preços ~ Dias + X, dfseg)
+summary(m3)
+
+# predict
+pred_m3 <- predict(m3, interval = "confidence")
+
+# join predict with dataset 
+dfm3 = cbind(df, pred_m3)
+head(dfm3)
+
+#plot
+g4 <- 
+  dfm3 |> 
+  ggplot(aes(x = Dias, y = Preços)) +
+  geom_point(colour = "red", size = 4) +
+  geom_line(aes(y = fit), color = "blue", size = 1, size = 1) +
+  labs(title = " REGRESSÃO SEGMENTADA (Knot = 90)") +
+  theme_igray()
+
+g4
+```
+
+## Spline Regression
+
+```{r}
+# Spline Model
+m4 <- lm(Preços ~ splines::bs(Dias,knots = 90),data = df)
+summary(m4)
+
+# Predict
+pred_m4 <- predict(m4, interval = "confidence")
+
+# join predict with dataset
+dfm4 = cbind(df, pred_m4)
+head(dfm4)
+
+# plot
+g5 <- 
+  dfm4 |> 
+  ggplot(aes(x = Dias, y = Preços)) +
+  geom_point(colour = "red", size = 4) +
+  geom_line(aes(y = fit), color = "blue", size = 1, size = 1) +
+  labs(title = "REGRESSÃO SPLINE (Knot = 90)") +
+  theme_igray()
+
+g5
+```
+
+# WHAT IS THE BETTER?
+
+```{r}
+g1 / (g2 | g3) / (g4 | g5)
+```
+
+### Reference 
+[Spline Regression in R](https://medium.com/analytics-vidhya/spline-regression-in-r-960ca82aa62c)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
